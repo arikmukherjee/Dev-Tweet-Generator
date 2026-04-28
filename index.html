@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevTweet — Viral Coding Tweets Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f17;
+    --bg3: #16161f;
+    --bg4: #1c1c28;
+    --border: #2a2a3d;
+    --border2: #3a3a55;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --muted2: #9090b0;
+    --accent: #7c6af7;
+    --accent2: #a594ff;
+    --accent-glow: rgba(124,106,247,0.18);
+    --green: #3dd68c;
+    --amber: #f5a623;
+    --red: #f06060;
+    --pink: #f06acd;
+    --teal: #2dd4bf;
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid bg */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,106,247,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,106,247,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    padding: 40px 0 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 40px;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .logo-area { display: flex; flex-direction: column; gap: 6px; }
+
+  .logo-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-tag::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(28px, 5vw, 44px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: var(--text);
+  }
+  h1 span { color: var(--accent2); }
+
+  .tagline {
+    font-size: 13px;
+    color: var(--muted2);
+    font-weight: 300;
+    margin-top: 4px;
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .stat {
+    text-align: center;
+  }
+  .stat-num {
+    display: block;
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent2);
+    line-height: 1;
+  }
+  .stat-lbl {
+    display: block;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+
+  /* Controls bar */
+  .controls-bar {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .select-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 180px;
+  }
+  .select-wrapper::after {
+    content: '▾';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+    font-size: 12px;
+  }
+
+  select {
+    width: 100%;
+    height: 48px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 0 40px 0 16px;
+    cursor: pointer;
+    appearance: none;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  select:hover { border-color: var(--border2); }
+  select:focus { border-color: var(--accent); }
+  select option { background: var(--bg3); }
+
+  .btn-generate {
+    height: 48px;
+    padding: 0 28px;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-generate::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+  }
+  .btn-generate:hover {
+    background: var(--accent2);
+    box-shadow: 0 0 24px var(--accent-glow);
+    transform: translateY(-1px);
+  }
+  .btn-generate:active { transform: scale(0.97) translateY(0); }
+  .btn-generate.loading { pointer-events: none; opacity: 0.7; }
+
+  .btn-icon { font-size: 16px; line-height: 1; }
+
+  /* Tweet card */
+  .tweet-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+    position: relative;
+    transition: border-color 0.3s;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .tweet-card.has-tweet { border-color: var(--border2); }
+  .tweet-card.has-tweet:hover { border-color: var(--accent); }
+
+  /* Decorative corner */
+  .tweet-card::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: -1px;
+    width: 60px; height: 60px;
+    border-top: 2px solid var(--accent);
+    border-left: 2px solid var(--accent);
+    border-radius: 16px 0 0 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .tweet-card.has-tweet::before { opacity: 1; }
+
+  /* Empty state */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 40px 20px;
+    text-align: center;
+    flex: 1;
+  }
+  .empty-icon {
+    width: 64px; height: 64px;
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+  }
+  .empty-title {
+    font-family: var(--display);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--muted2);
+  }
+  .empty-sub { font-size: 12px; color: var(--muted); max-width: 280px; line-height: 1.5; }
+
+  /* Tweet header */
+  .tweet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .category-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .pill-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+  }
+
+  .cat-dsa { background: rgba(61,214,140,0.12); color: var(--green); }
+  .cat-dsa .pill-dot { background: var(--green); }
+  .cat-tips { background: rgba(124,106,247,0.12); color: var(--accent2); }
+  .cat-tips .pill-dot { background: var(--accent2); }
+  .cat-humor { background: rgba(240,106,205,0.12); color: var(--pink); }
+  .cat-humor .pill-dot { background: var(--pink); }
+  .cat-interview { background: rgba(245,166,35,0.12); color: var(--amber); }
+  .cat-interview .pill-dot { background: var(--amber); }
+  .cat-facts { background: rgba(45,212,191,0.12); color: var(--teal); }
+  .cat-facts .pill-dot { background: var(--teal); }
+
+  /* Char counter */
+  .char-counter {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .char-bar {
+    width: 60px;
+    height: 3px;
+    background: var(--bg4);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .char-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s, background 0.3s;
+  }
+  .char-ok { background: var(--green); }
+  .char-warn { background: var(--amber); }
+  .char-over { background: var(--red); }
+  .char-num { min-width: 55px; text-align: right; }
+
+  /* Tweet body */
+  .tweet-body {
+    font-family: var(--mono);
+    font-size: 14.5px;
+    line-height: 1.75;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    flex: 1;
+    animation: fadeIn 0.4s ease forwards;
+  }
+  .tweet-body .hook { color: #fff; font-weight: 500; font-size: 15px; }
+  .tweet-body .hashtags { color: var(--accent2); opacity: 0.9; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* Tweet actions */
+  .tweet-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-top: 4px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-action {
+    height: 34px;
+    padding: 0 14px;
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted2);
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .btn-action:hover { border-color: var(--border2); color: var(--text); background: var(--bg3); }
+  .btn-action:active { transform: scale(0.96); }
+
+  .btn-action.copied { border-color: var(--green); color: var(--green); }
+  .btn-action.saved { border-color: var(--amber); color: var(--amber); }
+
+  .spacer { flex: 1; }
+
+  .status-msg {
+    font-size: 12px;
+    color: var(--green);
+    animation: fadeMsg 2s forwards;
+    white-space: nowrap;
+  }
+  @keyframes fadeMsg {
+    0%, 70% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* Tabs */
+  .tabs-section { margin-top: 40px; }
+  .tabs-header {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .tab-btn {
+    padding: 10px 18px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    margin-bottom: -1px;
+  }
+  .tab-btn:hover { color: var(--muted2); }
+  .tab-btn.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+
+  .tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px; height: 18px;
+    background: var(--bg4);
+    border-radius: 50%;
+    font-size: 10px;
+    margin-left: 6px;
+    color: var(--muted);
+  }
+  .tab-btn.active .tab-count { background: var(--accent); color: #fff; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* History / favorites list */
+  .tweet-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .list-item {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .list-item:hover { border-color: var(--border2); transform: translateX(2px); }
+
+  .list-cat-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+
+  .list-content { flex: 1; min-width: 0; }
+  .list-preview {
+    font-size: 13px;
+    color: var(--muted2);
+    line-height: 1.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .list-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 6px;
+  }
+  .list-cat { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .list-len { font-size: 11px; color: var(--muted); }
+
+  .list-del {
+    padding: 4px 8px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    border-radius: 6px;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .list-del:hover { color: var(--red); background: rgba(240,96,96,0.1); }
+
+  .list-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  /* Loading skeleton */
+  .skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 8px 0;
+    animation: fadeIn 0.3s ease;
+  }
+  .skel-line {
+    height: 14px;
+    background: var(--bg4);
+    border-radius: 4px;
+    animation: shimmer 1.5s infinite;
+    background-size: 200% 100%;
+    background-image: linear-gradient(90deg, var(--bg4) 0%, var(--bg3) 50%, var(--bg4) 100%);
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 60px;
+    padding: 24px 0;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .footer-logo {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: -0.01em;
+  }
+  .footer-logo span { color: var(--accent2); }
+  .footer-note { font-size: 11px; color: var(--muted); }
+
+  /* Responsive */
+  @media (max-width: 500px) {
+    header { padding: 28px 0 24px; margin-bottom: 28px; }
+    .controls-bar { flex-direction: column; }
+    .btn-generate { justify-content: center; }
+    .tweet-card { padding: 20px; }
+    .header-stats { display: none; }
+    h1 { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="header-inner">
+      <div class="logo-area">
+        <div class="logo-tag">v1.0 · DevTweet</div>
+        <h1>Viral <span>Tweet</span><br>Generator</h1>
+        <p class="tagline">Create scroll-stopping tweets for developers &amp; CS students</p>
+      </div>
+      <div class="header-stats">
+        <div class="stat">
+          <span class="stat-num" id="stat-total">0</span>
+          <span class="stat-lbl">Generated</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" id="stat-saved">0</span>
+          <span class="stat-lbl">Saved</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="select-wrapper">
+      <select id="category-select">
+        <option value="random">✦ Random category</option>
+        <option value="dsa">🧮 DSA Concepts</option>
+        <option value="tips">💡 Coding Tips</option>
+        <option value="humor">😄 Programming Humor</option>
+        <option value="interview">🎯 Interview Prep</option>
+        <option value="facts">🔬 Tech Facts</option>
+      </select>
+    </div>
+    <button class="btn-generate" id="gen-btn" onclick="generateTweet()">
+      <span class="btn-icon">⚡</span>
+      Generate Tweet
+    </button>
+  </div>
+
+  <!-- Tweet card -->
+  <div class="tweet-card" id="tweet-card">
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">✦</div>
+      <div class="empty-title">Ready to go viral?</div>
+      <div class="empty-sub">Select a category and hit Generate to craft your next viral developer tweet.</div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-section">
+    <div class="tabs-header">
+      <button class="tab-btn active" onclick="switchTab('history', this)">
+        History <span class="tab-count" id="hist-count">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('favorites', this)">
+        Favorites <span class="tab-count" id="fav-count">0</span>
+      </button>
+    </div>
+    <div id="panel-history" class="tab-panel active">
+      <div class="tweet-list" id="history-list">
+        <div class="list-empty">No tweets generated yet. Hit generate above!</div>
+      </div>
+    </div>
+    <div id="panel-favorites" class="tab-panel">
+      <div class="tweet-list" id="favorites-list">
+        <div class="list-empty">No favorites yet. Save a tweet you like!</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-logo">Dev<span>Tweet</span></div>
+    <div class="footer-note">Built for developers who ship daily ✦ Posts on X/Twitter</div>
+  </footer>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// Tweet Database
+// ─────────────────────────────────────────────
+const TWEETS = {
+  dsa: [
+    `Most devs use arrays when they should use hash maps.
+
+→ Array lookup: O(n) — scans every element
+→ Hash map lookup: O(1) — instant, like a phone book
+→ If you're checking "does X exist?" constantly, switch to a map
+→ Memory tradeoff? Almost always worth it
+
+The right data structure > clever code.
+
+#DSA #CodingInterview`,
+
+    `Binary Search isn't just for sorted arrays — it's a thinking pattern.
+
+→ Any time you can eliminate half the possibilities: use it
+→ Works on: times, values, answer spaces, even boolean conditions
+→ "Find the minimum valid X" problems? Binary search on the answer
+→ Most devs overlook this outside sorted arrays
+
+One pattern, 50+ LeetCode problems solved.
+
+#BinarySearch #DSA`,
+
+    `Two Pointers solves O(n²) problems in O(n). Here's the pattern:
+
+→ Problem: "find pairs in an array that sum to X"
+→ Naive: 2 nested loops = O(n²)
+→ Two pointers from both ends: O(n) after sorting
+→ Works for: palindromes, subarrays, window problems
+
+If your solution uses nested loops, ask: "can two pointers do this?"
+
+#DSA #Algorithms`,
+
+    `Dynamic Programming clicks once you see the pattern:
+
+→ Big problem = smaller overlapping subproblems
+→ Cache the subproblem answer (memoization)
+→ Build bottom-up if recursion hits stack limits
+→ Ask: "does the optimal solution use optimal subproblems?"
+
+If yes → DP. It's not magic, it's just recursion with memory.
+
+#DynamicProgramming #DSA`,
+
+    `Graphs aren't scary once you pick the right traversal:
+
+→ BFS = shortest path in unweighted graphs (queue)
+→ DFS = exploring all paths, cycles, connected components (stack/recursion)
+→ Dijkstra = shortest path with weights (priority queue)
+→ BFS for "levels", DFS for "all possibilities"
+
+Almost every grid problem is a disguised graph problem.
+
+#Graphs #BFS #DFS`,
+
+    `Stack problems have a universal signal word: "previous/next greater/smaller element"
+
+→ Monotonic stack keeps elements in sorted order
+→ When a new element breaks order → pop and process
+→ Result: O(n) instead of O(n²) brute force
+→ Use cases: stock prices, histogram area, temperature warmth
+
+Pattern recognition > memorizing solutions.
+
+#Stack #DSA #LeetCode`,
+
+    `Recursion base case = the most important line you'll write.
+
+→ Without it: infinite recursion, stack overflow
+→ Think: "what's the smallest version of this problem?"
+→ Trust the recursive call — don't trace the whole tree
+→ When confused: draw the call tree for a 2-3 element input
+
+Every recursive problem has an iterative twin. Know both.
+
+#Recursion #DSA`,
+
+    `Sorting isn't just for order — it unlocks better algorithms:
+
+→ After sorting: binary search becomes possible
+→ Duplicates? Sort + single pass finds them in O(n)
+→ Two Sum? Sort + two pointers beats hash map on space
+→ Merge intervals? Sort by start time first
+
+Sorting (O(n log n)) often makes O(n²) solutions into O(n log n).
+
+#Sorting #Algorithms #DSA`,
+  ],
+
+  tips: [
+    `The best debugging trick nobody taught you:
+
+→ Explain your code out loud to an imaginary colleague
+→ Your brain fills in what "should" happen
+→ Speaking forces you to confront what actually happens
+→ You'll find the bug before finishing your sentence 80% of the time
+
+It's called Rubber Duck Debugging. Your IDE won't tell you about it.
+
+#DebuggingTips #CodingLife`,
+
+    `Name your variables like you'll read them at 2am six months from now.
+
+→ Bad: d, tmp, x2, data2, newArr
+→ Good: daysUntilExpiry, userEmailList, filteredResults
+→ Boolean variables? Prefix with is/has/can/should
+→ Functions? Verbs. getData() not just data()
+
+Future you is a different person. Be kind to them.
+
+#CleanCode #Programming`,
+
+    `Git commits that will save your career:
+
+→ Write WHY, not WHAT: "Fix login bug" < "Fix session timeout after 30min idle"
+→ One logical change per commit
+→ git bisect becomes your superpower with small commits
+→ Commit messages are documentation that never goes stale
+
+Nobody regrets writing better commit messages.
+
+#Git #DevTips`,
+
+    `Reading error messages is a skill, not luck.
+
+→ Start from the bottom of the stack trace, not the top
+→ Google the LAST line you don't recognize
+→ Error message has a line number? Go there first
+→ "Expected X but got Y" → Y is your bug, not X
+
+Most errors tell you exactly where to look. We just panic and miss it.
+
+#Debugging #Programming`,
+
+    `Functions should do one thing, and name that thing clearly.
+
+→ If your function name has "and" in it → split it
+→ If it's longer than 20 lines → probably two functions
+→ Parameters > 3? Consider a config object
+→ If you're scared to change it → it does too much
+
+Code that does one thing is code you can actually trust.
+
+#CleanCode #SoftwareEngineering`,
+
+    `The 5-minute rule for asking for help:
+
+→ Spend 20 min truly stuck? Ask immediately — don't waste hours
+→ But write the question out fully first
+→ Half the time, writing the question solves it
+→ Include: what you expected, what happened, what you tried
+
+Asking good questions is a senior dev skill, not a junior one.
+
+#Programming #DevTips`,
+
+    `Code reviews aren't about finding bugs. They're about spreading knowledge.
+
+→ Ask questions, don't just critique
+→ Praise good decisions explicitly
+→ Suggest alternatives, don't mandate them
+→ "What if we tried X?" > "You should do X"
+
+The best PR comment teaches something. The worst just says "fix this."
+
+#CodeReview #Engineering`,
+
+    `The most underrated VS Code shortcut: multi-cursor editing.
+
+→ Alt+Click: add a cursor anywhere
+→ Ctrl+D: select next occurrence of selected text
+→ Ctrl+Shift+L: select ALL occurrences at once
+→ Rename 12 variables in 3 seconds, not 3 minutes
+
+If you're manually editing repeated code, you're doing it wrong.
+
+#VSCode #DevProductivity`,
+  ],
+
+  humor: [
+    `Software development in one conversation:
+
+PM: "How long will this take?"
+Dev: "2 weeks"
+PM: "Can we do it in 3 days?"
+Dev: "...2 weeks"
+PM: "What about 1 week?"
+Dev: "2 weeks"
+PM: "Okay 2 weeks. But maybe 1 week?"
+
+This is not fiction. This is Tuesday.
+
+#ProgrammerHumor #DevLife`,
+
+    `The 5 stages of debugging:
+
+1. "This is an easy fix"
+2. "Okay, weird, but I'll just try this"
+3. "How is this even possible"
+4. "I need to rewrite everything"
+5. You forgot a semicolon
+
+We don't talk about stage 4.
+
+#ProgrammerHumor #Debugging`,
+
+    `CSS centering in 2010: impossible
+CSS centering in 2015: use flexbox but memorize 4 properties
+CSS centering in 2020: 5 different right answers
+CSS centering in 2024: AI gives you 3 options and you pick wrong
+
+Some traditions must be preserved.
+
+#CSS #WebDev #ProgrammerHumor`,
+
+    `Estimation is a skill developers practice to become wrong faster.
+
+→ "2 hours" = half a day
+→ "2 days" = a week
+→ "Simple change" = archeological excavation
+→ "Almost done" = pray for mercy
+
+The Fibonacci sequence was invented to estimate sprints.
+
+#ProgrammerHumor #AgileLife`,
+
+    `Programming languages as coworkers:
+
+Python: Chill, gets stuff done, sometimes too slow
+JavaScript: Does the job but makes you question your choices
+Rust: Never breaks anything, lectures you about memory
+Java: Writes 8 files to do 1 thing
+Go: Ships fast, no drama, everyone respects them
+
+Which one are you?
+
+#ProgrammerHumor #DevLife`,
+
+    `The comment I leave for future developers:
+
+// DO NOT REMOVE THIS. I don't know why it works.
+// Removing it breaks production.
+// We tried. Three times.
+// Just leave it alone.
+// Please.
+
+Technical debt has a human face, and it is tired.
+
+#ProgrammerHumor #LegacyCode`,
+
+    `Documentation types, ranked by accuracy:
+
+1. Running code (most accurate)
+2. Good tests
+3. README written this month
+4. README written 3 years ago
+5. "It's self-documenting" (least accurate)
+
+The documentation that doesn't lie: the code itself.
+
+#ProgrammerHumor #Documentation`,
+
+    `New developer: "I'll understand this codebase in a week"
+
+Week 1: "I need more time"
+Month 1: "Almost there"
+Month 3: "I understand about 40% of it"
+Month 6: "I understand why we refactor"
+Year 2: "I wrote the parts nobody understands"
+
+#ProgrammerHumor #SeniorDev`,
+  ],
+
+  interview: [
+    `LeetCode strategy that actually works (without grinding 500 problems):
+
+→ Do 1 problem per day — consistency beats intensity
+→ Pattern > solution: learn Two Pointers, not just "3Sum"
+→ After failing: don't just read the answer, code it blind again
+→ Top 5 patterns cover 70% of interviews
+
+Depth over breadth. Always.
+
+#LeetCode #CodingInterview`,
+
+    `What interviewers ACTUALLY evaluate (not just your code):
+
+→ How you handle not knowing the answer
+→ Do you ask clarifying questions before coding?
+→ Can you communicate your thinking out loud?
+→ Do you test your own code or just submit?
+→ How do you respond to hints?
+
+Process > perfect solution. Always.
+
+#TechInterview #JobSearch`,
+
+    `System design interviews fail for one reason: jumping to solutions.
+
+→ Step 1: Clarify requirements (spend 5 min here)
+→ Step 2: Estimate scale — users, storage, QPS
+→ Step 3: High-level design first, then drill down
+→ Step 4: Identify bottlenecks and fix them
+
+Starting with "I'd use microservices" without context = red flag.
+
+#SystemDesign #TechInterview`,
+
+    `Behavioral questions decoded — they all ask the same thing:
+
+"Tell me about a challenge" = How do you handle pressure?
+"Disagreement with a teammate" = Can you navigate conflict?
+"Project you're proud of" = What do you value?
+"Weakness" = Are you self-aware?
+
+Prepare 5 stories. Adapt them to any question.
+
+#BehavioralInterview #STAR`,
+
+    `Salary negotiation advice no recruiter will give you:
+
+→ Never give the first number — let them anchor
+→ "What's your budget for this role?" is a valid counter
+→ Total comp > base: ask about equity, bonus, PTO
+→ Always negotiate — 90% of offers have room
+→ "I'm excited but need to discuss comp" is a full sentence
+
+Leaving $10k on the table because you didn't ask = real loss.
+
+#SalaryNegotiation #TechJobs`,
+
+    `How to answer "What's your greatest weakness?" without tanking the interview:
+
+→ Don't say "I work too hard" — everyone sees through it
+→ Pick a real weakness that doesn't disqualify you
+→ Show what you're actively doing about it
+→ End on evidence of improvement
+
+Interviewers want self-awareness. Give it to them genuinely.
+
+#Interview #JobTips`,
+
+    `Questions to ask at the end of every tech interview:
+
+→ "What does a successful first 90 days look like?"
+→ "What's the biggest technical challenge the team faces?"
+→ "How does code review work here?"
+→ "What made you join this company?"
+
+These aren't just polite — they tell you everything about the team culture.
+
+#TechInterview #JobSearch`,
+
+    `The LeetCode patterns that cover 80% of interviews:
+
+→ Sliding Window: subarray problems
+→ Two Pointers: pair/trio finding
+→ BFS/DFS: trees, graphs, grids
+→ Dynamic Programming: optimization problems
+→ Binary Search: sorted arrays + answer spaces
+
+Learn patterns, not solutions. Problems are infinite. Patterns are finite.
+
+#CodingInterview #DSA`,
+  ],
+
+  facts: [
+    `The first computer "bug" was a literal bug.
+
+→ 1947: Grace Hopper's team found a moth in the Harvard Mark II computer
+→ They taped it into the logbook: "First actual case of bug being found"
+→ The term "debugging" stuck permanently
+→ That logbook is now in the Smithsonian
+
+The most historic insect in computing history.
+
+#TechHistory #GraceHopper`,
+
+    `JavaScript was written in 10 days. Here's why that matters:
+
+→ Brendan Eich created it under extreme deadline pressure in 1995
+→ "typeof null === 'object'" is a bug they can't fix without breaking the web
+→ == vs === exists because of rushed type coercion decisions
+→ The language used by 98% of websites was built in less than 2 weeks
+
+Some technical debt is literally baked into civilization.
+
+#JavaScript #TechFacts`,
+
+    `Linux runs on 96.3% of the world's top 1 million servers.
+
+→ It also runs on all 500 of the world's fastest supercomputers
+→ Android (Linux kernel) powers 72% of mobile devices
+→ Linus Torvalds started it as a hobby project in 1991
+→ He was a 21-year-old student at the time
+
+One bored student's project became the backbone of the modern internet.
+
+#Linux #OpenSource #TechFacts`,
+
+    `The Y2K bug cost $300–600 billion to fix. Here's why:
+
+→ 1970s devs stored years as 2 digits to save precious memory
+→ "00" would read as 1900, not 2000
+→ Could crash banking, power grids, air traffic systems
+→ 300,000+ programmers worked for years to patch it
+
+The most expensive consequence of one byte of storage savings in history.
+
+#Y2K #TechHistory #Programming`,
+
+    `Moore's Law is finally slowing down — here's what that means for you:
+
+→ For 60 years: transistors doubled every ~2 years
+→ Today: physical limits of silicon are being hit
+→ Chip makers switched to parallel cores instead of speed
+→ This is why concurrency and async programming matter more than ever
+
+The free performance lunch we all relied on is ending.
+
+#MooresLaw #TechFacts #ComputerScience`,
+
+    `Git was created by Linus Torvalds in 10 days.
+
+→ April 2005: BitKeeper (Linux's VCS) revoked free access
+→ Torvalds: "I'll just write a better one"
+→ 10 days later: Git's first commit managed by Git itself
+→ Today: 100M+ developers use it daily
+
+The tool that version-controls civilization was built in a sprint.
+
+#Git #TechHistory #OpenSource`,
+
+    `The TCP/IP handshake you never think about:
+
+→ Every web request makes 3 trips before 1 byte of data moves
+→ SYN → SYN-ACK → ACK (then your actual request)
+→ A round trip can add 50-100ms latency just to connect
+→ This is why HTTPS/3 (QUIC) uses 0-RTT connections
+
+Your "fast" app might be waiting for handshakes on every request.
+
+#Networking #TCP #WebPerformance`,
+
+    `The most-used number in computing has a beautiful origin:
+
+→ 255 = the maximum value of a single byte (8 bits)
+→ 2⁸ = 256 possible values (0 through 255)
+→ It's why RGB colors max at 255
+→ Why IPv4 has four groups of 0-255
+→ Why many limits feel strangely familiar
+
+Binary math is hidden in everything you build.
+
+#ComputerScience #TechFacts #BinaryMath`,
+  ],
+};
+
+const CAT_META = {
+  dsa:       { label: 'DSA Concepts',       cls: 'cat-dsa',       dot: '#3dd68c', emoji: '🧮' },
+  tips:      { label: 'Coding Tips',        cls: 'cat-tips',      dot: '#a594ff', emoji: '💡' },
+  humor:     { label: 'Programming Humor',  cls: 'cat-humor',     dot: '#f06acd', emoji: '😄' },
+  interview: { label: 'Interview Prep',     cls: 'cat-interview', dot: '#f5a623', emoji: '🎯' },
+  facts:     { label: 'Tech Facts',         cls: 'cat-facts',     dot: '#2dd4bf', emoji: '🔬' },
+};
+
+// ─────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────
+let state = {
+  current: null,
+  currentCat: null,
+  history: [],
+  favorites: [],
+  totalGenerated: 0,
+  catUsed: {},
+  activeTab: 'history',
+};
+
+// ─────────────────────────────────────────────
+// Tweet Generation
+// ─────────────────────────────────────────────
+function pickCategory(sel) {
+  if (sel !== 'random') return sel;
+  const cats = Object.keys(TWEETS);
+  return cats[Math.floor(Math.random() * cats.length)];
+}
+
+function pickTweet(cat) {
+  const pool = TWEETS[cat];
+  const used = state.catUsed[cat] || [];
+  let available = pool.filter((_, i) => !used.includes(i));
+  if (!available.length) {
+    state.catUsed[cat] = [];
+    available = pool;
+  }
+  const idx = Math.floor(Math.random() * available.length);
+  const realIdx = pool.indexOf(available[idx]);
+  state.catUsed[cat] = [...(state.catUsed[cat] || []), realIdx];
+  return available[idx];
+}
+
+async function generateTweet() {
+  const sel = document.getElementById('category-select').value;
+  const cat = pickCategory(sel);
+  const tweet = pickTweet(cat);
+
+  state.current = tweet;
+  state.currentCat = cat;
+  state.totalGenerated++;
+
+  // Add to history (front)
+  state.history.unshift({ text: tweet, cat, ts: Date.now() });
+  if (state.history.length > 30) state.history.pop();
+
+  updateStats();
+  renderTweetCard(tweet, cat);
+  renderHistoryList();
+
+  // Switch to history tab to show
+  if (state.activeTab === 'history') renderHistoryList();
+}
+
+// ─────────────────────────────────────────────
+// Render Tweet Card
+// ─────────────────────────────────────────────
+function renderTweetCard(text, cat) {
+  const card = document.getElementById('tweet-card');
+  card.className = 'tweet-card has-tweet';
+
+  const meta = CAT_META[cat];
+  const len = text.length;
+  const pct = Math.min(len / 280, 1) * 100;
+  const barCls = len > 280 ? 'char-fill char-over' : len > 250 ? 'char-fill char-warn' : 'char-fill char-ok';
+  const countCls = len > 280 ? 'char-num' + ' style="color:var(--red)"' : len > 250 ? 'char-num' : 'char-num';
+
+  const isSaved = state.favorites.some(f => f.text === text);
+
+  // Highlight first line as hook, last line as hashtags
+  const lines = text.split('\n');
+  let highlighted = '';
+  for (let i = 0; i < lines.length; i++) {
+    if (i === 0) {
+      highlighted += `<span class="hook">${escHtml(lines[i])}</span>`;
+    } else if (lines[i].startsWith('#')) {
+      highlighted += `\n<span class="hashtags">${escHtml(lines[i])}</span>`;
+    } else {
+      highlighted += '\n' + escHtml(lines[i]);
+    }
+  }
+
+  card.innerHTML = `
+    <div class="tweet-header">
+      <span class="category-pill ${meta.cls}">
+        <span class="pill-dot"></span>${meta.label}
+      </span>
+      <div class="char-counter">
+        <div class="char-bar"><div class="${barCls}" id="char-fill" style="width:${pct}%"></div></div>
+        <span class="char-num" id="char-num" style="${len>280?'color:var(--red)':len>250?'color:var(--amber)':''}">${len}/280</span>
+      </div>
+    </div>
+    <div class="tweet-body" id="tweet-body">${highlighted}</div>
+    <div class="tweet-actions">
+      <button class="btn-action" id="copy-btn" onclick="copyTweet()">📋 Copy</button>
+      <button class="btn-action" onclick="generateTweet()">🔄 Regenerate</button>
+      <button class="btn-action ${isSaved ? 'saved' : ''}" id="save-btn" onclick="toggleSave()">
+        ${isSaved ? '★ Saved' : '☆ Save'}
+      </button>
+      <div class="spacer"></div>
+      <span class="status-msg" id="status-msg" style="display:none"></span>
+    </div>
+  `;
+}
+
+// ─────────────────────────────────────────────
+// Actions
+// ─────────────────────────────────────────────
+async function copyTweet() {
+  if (!state.current) return;
+  await navigator.clipboard.writeText(state.current);
+  const btn = document.getElementById('copy-btn');
+  btn.textContent = '✓ Copied!';
+  btn.classList.add('copied');
+  showStatus('Copied to clipboard!');
+  setTimeout(() => {
+    btn.textContent = '📋 Copy';
+    btn.classList.remove('copied');
+  }, 2000);
+}
+
+function toggleSave() {
+  if (!state.current) return;
+  const idx = state.favorites.findIndex(f => f.text === state.current);
+  if (idx >= 0) {
+    state.favorites.splice(idx, 1);
+    showStatus('Removed from favorites');
+  } else {
+    state.favorites.unshift({ text: state.current, cat: state.currentCat, ts: Date.now() });
+    showStatus('Saved to favorites! ★');
+  }
+  updateStats();
+  renderTweetCard(state.current, state.currentCat);
+  if (state.activeTab === 'favorites') renderFavoritesList();
+}
+
+function showStatus(msg) {
+  const el = document.getElementById('status-msg');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'inline';
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = 'fadeMsg 2.5s forwards';
+  setTimeout(() => { if (el) el.style.display = 'none'; }, 2500);
+}
+
+// ─────────────────────────────────────────────
+// Lists
+// ─────────────────────────────────────────────
+function renderHistoryList() {
+  const el = document.getElementById('history-list');
+  document.getElementById('hist-count').textContent = state.history.length;
+  if (!state.history.length) {
+    el.innerHTML = '<div class="list-empty">No tweets generated yet. Hit generate above!</div>';
+    return;
+  }
+  el.innerHTML = state.history.map((item, i) => listItemHTML(item, i, 'history')).join('');
+}
+
+function renderFavoritesList() {
+  const el = document.getElementById('favorites-list');
+  document.getElementById('fav-count').textContent = state.favorites.length;
+  if (!state.favorites.length) {
+    el.innerHTML = '<div class="list-empty">No favorites yet. Save a tweet you like!</div>';
+    return;
+  }
+  el.innerHTML = state.favorites.map((item, i) => listItemHTML(item, i, 'favorites')).join('');
+}
+
+function listItemHTML(item, i, source) {
+  const meta = CAT_META[item.cat];
+  const preview = item.text.split('\n')[0].slice(0, 80) + (item.text.split('\n')[0].length > 80 ? '…' : '');
+  return `
+    <div class="list-item" onclick="loadTweet('${source}', ${i})">
+      <div class="list-cat-dot" style="background:${meta.dot}"></div>
+      <div class="list-content">
+        <div class="list-preview">${escHtml(preview)}</div>
+        <div class="list-meta">
+          <span class="list-cat">${meta.label}</span>
+          <span class="list-len">${item.text.length} chars</span>
+        </div>
+      </div>
+      <button class="list-del" onclick="event.stopPropagation(); deleteItem('${source}', ${i})" title="Remove">×</button>
+    </div>`;
+}
+
+function loadTweet(source, i) {
+  const item = (source === 'history' ? state.history : state.favorites)[i];
+  if (!item) return;
+  state.current = item.text;
+  state.currentCat = item.cat;
+  renderTweetCard(item.text, item.cat);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function deleteItem(source, i) {
+  if (source === 'history') {
+    state.history.splice(i, 1);
+    renderHistoryList();
+  } else {
+    state.favorites.splice(i, 1);
+    renderFavoritesList();
+    updateStats();
+  }
+}
+
+// ─────────────────────────────────────────────
+// Tabs
+// ─────────────────────────────────────────────
+function switchTab(tab, el) {
+  state.activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  if (tab === 'history') renderHistoryList();
+  if (tab === 'favorites') renderFavoritesList();
+}
+
+// ─────────────────────────────────────────────
+// Utils
+// ─────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('stat-total').textContent = state.totalGenerated;
+  document.getElementById('stat-saved').textContent = state.favorites.length;
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
